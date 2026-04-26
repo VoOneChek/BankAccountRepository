@@ -6,3 +6,4 @@
 - `simple-version/` — минимальная реализация класса `BankAccount` строго по первому заданию
 - `Practical task 2/` - второе задание
 - `Practical task 3/` - третье задание
+- `lambda-reflection-project/` - четвертое задание
