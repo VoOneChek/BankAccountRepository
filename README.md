@@ -7,4 +7,4 @@
 - `Practical task 2/` - второе задание
 - `Practical task 3/` - третье задание
 - `lambda-reflection-project/` - четвертое задание
-- `restaurant-rating/` - пятое задание (слито в main, ветка Task5)
+- `restaurant-rating/` - 5-6 задание (слито в main, ветка Task5, Task6)
