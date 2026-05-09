@@ -13,15 +13,23 @@ public class VisitorService {
 
     private final VisitorRepository repository;
 
-    public void save(Visitor v) {
-        repository.save(v);
-    }
-
-    public void remove(Visitor v) {
-        repository.remove(v);
+    public void save(Visitor visitor) {
+        repository.save(visitor);
     }
 
     public List<Visitor> findAll() {
         return repository.findAll();
+    }
+
+    public Visitor findById(Long id) {
+        return repository.findById(id).orElseThrow();
+    }
+
+    public void update(Visitor visitor) {
+        repository.update(visitor);
+    }
+
+    public void deleteById(Long id) {
+        repository.deleteById(id);
     }
 }
