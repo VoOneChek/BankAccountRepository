@@ -4,14 +4,13 @@ import app.dto.visitor.*;
 import app.entity.Visitor;
 import app.mapper.VisitorMapper;
 import app.service.VisitorService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/visitors")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class VisitorController {
 
@@ -23,42 +22,51 @@ public class VisitorController {
 
         return service.findAll()
                 .stream()
-                .map(mapper::toDTO)
+                .map(mapper::toDto)
                 .toList();
     }
 
     @GetMapping("/{id}")
-    public VisitorResponseDTO findById(@PathVariable Long id) {
+    public VisitorResponseDTO findById(
+            @PathVariable Long id
+    ) {
 
-        return mapper.toDTO(service.findById(id));
+        return mapper.toDto(
+                service.findById(id)
+        );
     }
 
     @PostMapping
-    public void save(@RequestBody @Valid VisitorRequestDTO dto) {
+    public VisitorResponseDTO save(
+            @RequestBody VisitorRequestDTO dto
+    ) {
 
-        Visitor visitor = mapper.toEntity(dto);
+        Visitor visitor =
+                mapper.toEntity(dto);
 
-        visitor.setId(System.currentTimeMillis());
-
-        service.save(visitor);
+        return mapper.toDto(
+                service.save(visitor)
+        );
     }
 
     @PutMapping("/{id}")
-    public void update(
+    public VisitorResponseDTO update(
             @PathVariable Long id,
-            @RequestBody @Valid VisitorRequestDTO dto
+            @RequestBody VisitorRequestDTO dto
     ) {
 
-        Visitor visitor = mapper.toEntity(dto);
+        Visitor visitor =
+                mapper.toEntity(dto);
 
-        visitor.setId(id);
-
-        service.update(visitor);
+        return mapper.toDto(
+                service.update(id, visitor)
+        );
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-
-        service.deleteById(id);
+    public void delete(
+            @PathVariable Long id
+    ) {
+        service.delete(id);
     }
 }
