@@ -4,10 +4,10 @@ import app.dto.restaurant.*;
 import app.entity.Restaurant;
 import app.mapper.RestaurantMapper;
 import app.service.RestaurantService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -28,37 +28,68 @@ public class RestaurantController {
     }
 
     @GetMapping("/{id}")
-    public RestaurantResponseDTO findById(@PathVariable Long id) {
+    public RestaurantResponseDTO findById(
+            @PathVariable Long id
+    ) {
 
-        return mapper.toDTO(service.findById(id));
+        return mapper.toDTO(
+                service.findById(id)
+        );
     }
 
     @PostMapping
-    public void save(@RequestBody @Valid RestaurantRequestDTO dto) {
+    public RestaurantResponseDTO save(
+            @RequestBody RestaurantRequestDTO dto
+    ) {
 
-        Restaurant restaurant = mapper.toEntity(dto);
+        Restaurant restaurant =
+                mapper.toEntity(dto);
 
-        restaurant.setId(System.currentTimeMillis());
-
-        service.save(restaurant);
+        return mapper.toDTO(
+                service.save(restaurant)
+        );
     }
 
     @PutMapping("/{id}")
-    public void update(
+    public RestaurantResponseDTO update(
             @PathVariable Long id,
-            @RequestBody @Valid RestaurantRequestDTO dto
+            @RequestBody RestaurantRequestDTO dto
     ) {
 
-        Restaurant restaurant = mapper.toEntity(dto);
+        Restaurant restaurant =
+                mapper.toEntity(dto);
 
-        restaurant.setId(id);
-
-        service.update(restaurant);
+        return mapper.toDTO(
+                service.update(id, restaurant)
+        );
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(
+            @PathVariable Long id
+    ) {
+        service.delete(id);
+    }
 
-        service.deleteById(id);
+    @GetMapping("/rating")
+    public List<RestaurantResponseDTO> findByRating(
+            @RequestParam BigDecimal rating
+    ) {
+
+        return service.findWithRating(rating)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+
+    @GetMapping("/rating-query")
+    public List<RestaurantResponseDTO> findByRatingQuery(
+            @RequestParam BigDecimal rating
+    ) {
+
+        return service.findWithRatingQuery(rating)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
     }
 }

@@ -1,14 +1,12 @@
 package app.service;
 
-import app.entity.Restaurant;
-import app.entity.Review;
-import app.repository.RestaurantRepository;
-import app.repository.ReviewRepository;
+import app.entity.*;
+import app.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,51 +15,73 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final RestaurantRepository restaurantRepository;
 
-    public void save(Review review) {
+    public Page<Review> findAll(
+            int page,
+            int size
+    ) {
 
-        reviewRepository.save(review);
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("rating").descending()
+        );
 
-        recalculateRestaurantRating(review.getRestaurantId());
+        return reviewRepository.findAll(pageable);
     }
 
-    public List<Review> findAll() {
-        return reviewRepository.findAll();
-    }
-
-    public Review findById(Long id) {
-
+    public Review findById(
+            ReviewId id
+    ) {
         return reviewRepository.findById(id)
                 .orElseThrow();
     }
 
-    public void update(Review review) {
+    public Review save(Review review) {
 
-        reviewRepository.update(review);
+        Review saved = reviewRepository.save(review);
 
-        recalculateRestaurantRating(review.getRestaurantId());
+        updateRestaurantRating(
+                review.getRestaurant().getId()
+        );
+
+        return saved;
     }
 
-    public void deleteById(Long id) {
+    public void delete(ReviewId id) {
 
         Review review = findById(id);
 
+        Long restaurantId =
+                review.getRestaurant().getId();
+
         reviewRepository.deleteById(id);
 
-        recalculateRestaurantRating(review.getRestaurantId());
+        updateRestaurantRating(restaurantId);
     }
 
-    private void recalculateRestaurantRating(Long restaurantId) {
-
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow();
+    private void updateRestaurantRating(
+            Long restaurantId
+    ) {
 
         double avg = reviewRepository.findAll()
                 .stream()
-                .filter(r -> r.getRestaurantId().equals(restaurantId))
+                .filter(r ->
+                        r.getRestaurant()
+                                .getId()
+                                .equals(restaurantId))
                 .mapToInt(Review::getRating)
                 .average()
                 .orElse(0);
 
-        restaurant.setRating(BigDecimal.valueOf(avg));
+        Restaurant restaurant =
+                restaurantRepository.findById(
+                        restaurantId
+                ).orElseThrow();
+
+        restaurant.setRating(
+                BigDecimal.valueOf(avg)
+        );
+
+        restaurantRepository.save(restaurant);
     }
 }

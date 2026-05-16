@@ -1,14 +1,12 @@
 package app.controller;
 
 import app.dto.review.*;
-import app.entity.Review;
+import app.entity.*;
 import app.mapper.ReviewMapper;
 import app.service.ReviewService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -19,46 +17,57 @@ public class ReviewController {
     private final ReviewMapper mapper;
 
     @GetMapping
-    public List<ReviewResponseDTO> findAll() {
+    public Page<ReviewResponseDTO> findAll(
 
-        return service.findAll()
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "5")
+            int size
+    ) {
+
+        return service.findAll(page, size)
+                .map(mapper::toDto);
     }
 
-    @GetMapping("/{id}")
-    public ReviewResponseDTO findById(@PathVariable Long id) {
+    @GetMapping("/{visitorId}/{restaurantId}")
+    public ReviewResponseDTO findById(
 
-        return mapper.toDTO(service.findById(id));
+            @PathVariable Long visitorId,
+
+            @PathVariable Long restaurantId
+    ) {
+
+        ReviewId id = new ReviewId(
+                visitorId,
+                restaurantId
+        );
+
+        return mapper.toDto(
+                service.findById(id)
+        );
     }
 
     @PostMapping
-    public void save(@RequestBody @Valid ReviewRequestDTO dto) {
-
-        Review review = mapper.toEntity(dto);
-
-        review.setId(System.currentTimeMillis());
-
-        service.save(review);
+    public Review save(
+            @RequestBody Review review
+    ) {
+        return service.save(review);
     }
 
-    @PutMapping("/{id}")
-    public void update(
-            @PathVariable Long id,
-            @RequestBody @Valid ReviewRequestDTO dto
+    @DeleteMapping("/{visitorId}/{restaurantId}")
+    public void delete(
+
+            @PathVariable Long visitorId,
+
+            @PathVariable Long restaurantId
     ) {
 
-        Review review = mapper.toEntity(dto);
+        ReviewId id = new ReviewId(
+                visitorId,
+                restaurantId
+        );
 
-        review.setId(id);
-
-        service.update(review);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-
-        service.deleteById(id);
+        service.delete(id);
     }
 }
